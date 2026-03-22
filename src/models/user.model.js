@@ -49,12 +49,17 @@ const userSchema = new Schema(
     },{timestamps:true}
 )
 
-userSchema.pre("save",async function (next) {
-    if(!this.isModified("password")) return next();
+userSchema.pre("save", async function () { // Removed 'next' here
+    if (!this.isModified("password")) return; // Just 'return' to stop execution
 
-    this.password = await bcrypt.hash(this.password,10)
-    next()
-})
+    try {
+        this.password = await bcrypt.hash(this.password, 10);
+        // No next() call needed here
+    } catch (error) {
+        throw error; // Throwing error will stop the save process
+    }
+});
+
 
 userSchema.methods.isPasswordCorrect = async function (password) {
     return await bcrypt.compare(password,this.password)
